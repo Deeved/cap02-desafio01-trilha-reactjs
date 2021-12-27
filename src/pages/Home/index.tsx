@@ -23,31 +23,20 @@ interface CartItemsAmount {
 
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductFormatted[]>([]);
-  // const { addProduct, cart } = useCart();
+  const { addProduct, cart } = useCart();
 
-  // const cartItemsAmount = cart.reduce((sumAmount, product) => {
-  //   // TODO
-  // }, {} as CartItemsAmount)
+  const cartItemsAmount = cart.reduce((sumAmount, product) => {
+    // TODO
+    sumAmount[product.id] = product.amount
+    return sumAmount
+  }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
       // TODO
-      await api.get('http://localhost:3333/products')
-      .then(response => response.data)
-      .then(data => {
-        let p: ProductFormatted[] = []
-        p = (data as Product[]).map(prods => {
-          return {
-            id: prods.id,
-            title: prods.title,
-            image: prods.image,
-            price: prods.price,
-            priceFormatted: formatPrice(prods.price)
-          }
-        })
-
-        setProducts(p)
-      })
+      const response = await api.get('/products');
+      const formattedProducts = response.data.map( (product:Product) => ({...product, price: formatPrice(product.price)}) );
+      setProducts(formattedProducts);
     }
 
     loadProducts();
@@ -55,13 +44,14 @@ const Home = (): JSX.Element => {
 
   function handleAddProduct(id: number) {
     // TODO
+    addProduct(id)
   }
 
   return (
     <ProductList>
       {
         products.map(product => (
-          <li>
+          <li key={product.id}>
             <img src={product.image} alt={product.title}/>
             <strong>{product.title}</strong>
             <span>{product.priceFormatted}</span>
@@ -72,7 +62,7 @@ const Home = (): JSX.Element => {
             >
               <div data-testid="cart-product-quantity">
                 <MdAddShoppingCart size={16} color="#FFF" />
-                {/* {cartItemsAmount[product.id] || 0} */} 2
+                {cartItemsAmount[product.id] || 0} 
               </div>
     
               <span>ADICIONAR AO CARRINHO</span>
